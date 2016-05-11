@@ -167,7 +167,7 @@ public class ReactNativeMapboxGLManager extends SimpleViewManager<MapView> {
     }
 
     public void setAnnotations(MapView view, @Nullable ReadableArray value, boolean clearMap) {
-        if (value == null || value.size() < 1) {
+        if (value == null) {
             Log.e(REACT_CLASS, "Error: No annotations");
         } else {
             AsyncTask buildAnnotationList = new BuildAnnotationList(this, clearMap);
@@ -458,7 +458,7 @@ public class ReactNativeMapboxGLManager extends SimpleViewManager<MapView> {
         return mapView;
     }
 
-    public Icon iconFromUrl(MapView view, String url) {
+    public Icon iconFromUrl(MapView view, String url, @Nullable int width, @Nullable int height) {
         Icon icon;
         
         try {
@@ -473,7 +473,11 @@ public class ReactNativeMapboxGLManager extends SimpleViewManager<MapView> {
                         image = drawableFromUrl(view, url);
                     }
                     IconFactory iconFactory = view.getIconFactory();
-                    icon = iconFactory.fromDrawable(image);
+                    if (width != null && heigth != null) {
+                        icon = iconFactory.fromDrawable(image, width, height);
+                    } else {
+                        icon = iconFactory.fromDrawable(image);
+                    }
                     iconCache.put(url, icon);
                 }
             }
@@ -504,7 +508,17 @@ public class ReactNativeMapboxGLManager extends SimpleViewManager<MapView> {
             ReadableMap annotationImage = annotation.getMap("annotationImage");
             String annotationURL = annotationImage.getString("url");
             try {
-                Icon icon = iconFromUrl(mapView, annotationURL);
+                Icon icon;
+
+                if (annotationImage.hasKey("height") && annotationImage.hasKey("width")) {
+                    float scale = view.getResources().getDisplayMetrics().density;
+                    int height = Math.round((float)annotationImage.getInt("height") * scale);
+                    int width = Math.round((float)annotationImage.getInt("width") * scale);
+                    icon = iconFromUrl(mapView, annotationURL, width, height);
+                } else {
+                    icon = iconFromUrl(mapView, annotationURL, null, null);
+                }
+
                 marker.icon(icon);
             } catch (Exception e) {
                 e.printStackTrace();

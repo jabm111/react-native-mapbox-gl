@@ -1,15 +1,15 @@
 'use strict';
 
-var React = require('react-native');
+import React, { Component } from 'react';
 var Mapbox = require('react-native-mapbox-gl');
 var mapRef = 'mapRef';
-var {
+import {
   AppRegistry,
   StyleSheet,
   Text,
-  StatusBarIOS,
+  StatusBar,
   View
-} = React;
+} from 'react-native';
 
 var MapExample = React.createClass({
   mixins: [Mapbox.Mixin],
@@ -85,8 +85,14 @@ var MapExample = React.createClass({
   onTap(location) {
     console.log('tapped', location);
   },
-  render: function() {
-    StatusBarIOS.setHidden(true);
+  onOfflineProgressDidChange(progress) {
+    console.log(progress);
+  },
+  onOfflineMaxAllowedMapboxTiles(hitLimit) {
+    console.log(hitLimit);
+  },
+  render() {
+    StatusBar.setHidden(true);
     return (
       <View style={styles.container}>
         <Text onPress={() => this.setDirectionAnimated(mapRef, 0)}>
@@ -145,17 +151,47 @@ var MapExample = React.createClass({
         <Text onPress={() => this.setUserTrackingMode(mapRef, this.userTrackingMode.follow)}>
           Set userTrackingMode to follow
         </Text>
-        <Text onPress={() => this.getCenterCoordinateZoomLevel(mapRef, (err, location)=> {
-            if (err) console.log(err);
+        <Text onPress={() => this.getCenterCoordinateZoomLevel(mapRef, (location)=> {
             console.log(location);
           })}>
           Get location
         </Text>
-        <Text onPress={() => this.getDirection(mapRef, (err, direction)=> {
-            if (err) console.log(err);
+        <Text onPress={() => this.getDirection(mapRef, (direction)=> {
             console.log(direction);
           })}>
           Get direction
+        </Text>
+        <Text onPress={() => this.getBounds(mapRef, (bounds)=> {
+            console.log(bounds);
+          })}>
+          Get bounds
+        </Text>
+        <Text onPress={() => this.addPackForRegion(mapRef, {
+            name: 'test',
+            type: 'bbox',
+            bounds: [0, 0, 0, 0],
+            minZoomLevel: 0,
+            maxZoomLevel: 0,
+            metadata: {},
+            styleURL: this.mapStyles.emerald
+          })}>
+          Create offline pack
+        </Text>
+        <Text onPress={() => this.getPacks(mapRef, (err, packs)=> {
+            if (err) console.log(err);
+            console.log(packs);
+          })}>
+          Get offline packs
+        </Text>
+        <Text onPress={() => this.removePack(mapRef, 'test', (err, info)=> {
+            if (err) console.log(err);
+            if (info) {
+              console.log('Deleted', info.deleted);
+            } else {
+              console.log('No packs to delete');
+            }
+          })}>
+          Remove pack with name 'test'
         </Text>
         <Mapbox
           style={styles.container}
@@ -177,7 +213,9 @@ var MapExample = React.createClass({
           onRightAnnotationTapped={this.onRightAnnotationTapped}
           onUpdateUserLocation={this.onUpdateUserLocation}
           onLongPress={this.onLongPress}
-          onTap={this.onTap} />
+          onTap={this.onTap}
+          onOfflineProgressDidChange={this.onOfflineProgressDidChange}
+          onOfflineMaxAllowedMapboxTiles={this.onOfflineMaxAllowedMapboxTiles} />
       </View>
     );
   }
