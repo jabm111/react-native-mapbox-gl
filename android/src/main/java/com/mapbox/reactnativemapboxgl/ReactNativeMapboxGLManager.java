@@ -458,7 +458,7 @@ public class ReactNativeMapboxGLManager extends SimpleViewManager<MapView> {
         return mapView;
     }
 
-    public Icon iconFromUrl(MapView view, String url, @Nullable int width, @Nullable int height) {
+    public Icon iconFromUrl(MapView view, String url, int width, int height) {
         Icon icon;
         
         try {
@@ -473,7 +473,7 @@ public class ReactNativeMapboxGLManager extends SimpleViewManager<MapView> {
                         image = drawableFromUrl(view, url);
                     }
                     IconFactory iconFactory = view.getIconFactory();
-                    if (width != null && heigth != null) {
+                    if (width > 0 && height > 0) {
                         icon = iconFactory.fromDrawable(image, width, height);
                     } else {
                         icon = iconFactory.fromDrawable(image);
@@ -516,7 +516,7 @@ public class ReactNativeMapboxGLManager extends SimpleViewManager<MapView> {
                     int width = Math.round((float)annotationImage.getInt("width") * scale);
                     icon = iconFromUrl(mapView, annotationURL, width, height);
                 } else {
-                    icon = iconFromUrl(mapView, annotationURL, null, null);
+                    icon = iconFromUrl(mapView, annotationURL, 0, 0);
                 }
 
                 marker.icon(icon);
